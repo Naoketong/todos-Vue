@@ -1,0 +1,122 @@
+<template>
+  <div id="app">
+    <div class="todoapp">
+      <header class="header">
+        <h1>极客 todos</h1>
+        <input class="new-todo" placeholder="What needs you 弄啥咧?" autofocus @keyup.enter="create"  v-model="value"><!-- 3.5 -->
+      </header>
+      <section class="main">
+        <input class="toggle-all" id="toggle-all" type="checkbox" :checked="chooseAll"><!-- 3.4 -->
+        <label for="toggle-all" @click="toggleAll">Mark all as complete</label><!-- 3.4 -->
+        <ul class="todo-list">
+          <li v-for="(item,index) in show" :class="[item.completed && 'completed', item.editing && 'editing']"><!-- 3.2 -->
+            <div class="view">
+              <input class="toggle" type="checkbox" :checked="item.completed" @click="toggleCompleted(index)"/><!-- 3.4 -->
+              <label @dblclick="editingMode(index,$event)">{{item.title}}</label><!-- 3.3 -->
+              <button class="destroy" @click="destroy(index)"></button><!-- 3.6 删除个体 -->
+            </div>
+            <input class="edit" v-model="item.title" 
+              
+              @blur="doneEdit(item)" 
+              @keyup.enter="doneEdit(item)" >
+          </li>
+        </ul>
+      </section>
+      <footer class="footer" v-show="todos.length">
+        <span class="todo-count"><strong>{{todos.length}}</strong> 总数</span>
+        <ul class="filters">
+          <li v-for="(item,key) in filters"@click="changeFilter( key, $event)"><!-- 3.7 项目切换  -->
+            <a :class="[filter === key && 'selected']" href="javascript:;">{{item}}</a>
+          </li>
+        </ul>
+        <button class="clear-completed" @click = "clearCompleted">清除已完成</button><!-- 3.6 删除已完成 -->
+      </footer>
+    </div>
+  </div>
+</template>
+
+<script>
+// import HelloWorld from './components/HelloWorld.vue'
+// import index from './js/index.js'
+
+  export default{
+    name: 'todoapp',
+    data: function() {
+      return {
+        value: '',
+        editeIndex: null,
+        filter: 'all',
+        filters: {
+          'all': '全部',
+          'await': '待办',
+          'achieve': '已完成',
+        },
+        todos:[
+          {title: '吃饭饭',completed: true,editing: false},
+          {title: '睡觉觉',completed: false,editing: false},
+          {title: '打豆豆',completed: false,editing: false},
+        ],
+      }
+    },
+    
+    computed: {
+      show(){
+        let filter = this.filter;
+        let todos = this.todos.filter( data => {
+          if(filter === 'all'){
+            return data
+          }else if( filter === 'await'){
+            return !data.completed
+          }else if( filter === 'achieve'){
+            return data.completed
+          }
+        })
+        return todos
+      },
+      chooseAll(){
+        return this.todos.every(data => data.completed);
+      },
+    },
+    methods: {
+      changeFilter (key, event) { //点击切换
+        this.filter = key
+      },      
+      toggleCompleted(index){//点击切换状态
+        this.todos[index]['completed'] = !this.todos[index]['completed']
+      },
+      editingMode(index,event){//编辑内容
+        this.todos[index]['editing'] = true
+        // console.log(this.todos)
+        this.editeIndex = index;
+      },
+      doneEdit(item){//编辑内容后回车确认
+        item.editing = false;
+        this.editeIndex = null;
+      },
+      toggleAll(e){//全选的
+        let chooseAll = this.chooseAll;
+        this.todos.forEach( data => data.completed = !chooseAll)
+      },
+      create(e){//添加项目
+        let value = this.value;
+        this.todos.push({
+          title:value,
+          completed:false,
+          editing:false
+        })
+        this.value = '';
+      },
+      destroy(index){// 删除个体todos
+        this.todos.splice(index,1)
+      },
+      clearCompleted(){//清除所有已经完成
+        let del = this.todos.filter(data => data.completed === false)
+        this.todos = del
+      },
+      changeFilter (key, event) {//项目筛选
+        this.filter = key
+      },
+    },
+  }
+</script>
+
